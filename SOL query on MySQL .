@@ -1,0 +1,113 @@
+CREATE DATABASE temp1 ;  // we are creating a database using mysql that is temp1
+DROP DATABASE temp1;     // deleting that temp1 database from the mysql 
+create database temp2;
+DROP DATABASE temp2;
+CREATE DATABASE college;
+
+USE college;
+
+CREATE TABLE Student(
+   id INT PRIMARY KEY,
+   name VARCHAR(50),
+   age INT NOT NULL
+);
+
+INSERT INTO Student VALUES(33,"Ayush",19);
+INSERT INTO Student VALUES(01,"Aaditya",19);
+INSERT INTO Student VALUES(72,"Murari",21);
+INSERT INTO Student VALUES(06,"Abhishek",22);
+INSERT INTO Student VALUES(56,"Kunal",20);
+
+SELECT * FROM Student;
+
+DROP DATABASE IF EXISTS Student ;
+CREATE DATABASE org;
+USE org;
+
+CREATE TABLE worker( 
+     WORKER_ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+     FIRST_NAME CHAR(25),
+     LAST_NAME CHAR(25),
+     SALARY INT(15),
+     JOINING_DATE DATETIME,
+     DEPARTMENT CHAR(25)
+ );
+ INSERT INTO worker 
+          (WORKER_ID, FIRST_NAME, LAST_NAME, SALARY, JOINING_DATE, DEPARTMENT) 
+  VALUES
+          (001, 'Aashish','Arora',100000,'14-02-21 09:00:00','HR'),
+          (002, 'Anamika','bharti',200000,'15-05-20 09:00:00','Account'),
+          (003, 'Ayush','Singh',400000,'01-10-25 09:00:00','HR'),
+          (004, 'Vipul','Dupta',100000,'11-08-22 09:00:00','Account'),
+          (005, 'ARPITA','Arora',500000,'15-06-24 09:00:00','Manager');
+     
+ SELECT * FROM worker ;
+ 
+ CREATE TABLE Bonus (
+	  WORKER_REF_ID INT,
+      BONUS_AMOUNT INT(10),
+      BONUS_DATE DATETIME ,
+      FOREIGN KEY (WORKER_REF_ID)
+        REFERENCES worker(WORKER_ID)
+        ON DELETE CASCADE
+ );
+ 
+ INSERT INTO Bonus 
+          (WORKER_REF_ID , BONUS_AMOUNT, BONUS_DATE) 
+   VALUES 
+          (001,5000,'20-11-20'),
+          (002,5000,'20-11-20'),
+          (003,5000,'20-11-20'),
+          (001,5000,'20-11-20'),
+          (001,5000,'20-11-20');
+  
+  SELECT * FROM Bonus ;
+  
+  CREATE TABLE Title (
+       WORKER_REF_ID INT,
+       WORKER_TITLE CHAR(25),
+       AFFECTED_FROM DATETIME,
+       FOREIGN KEY (WORKER_REF_ID)
+           REFERENCES worker(WORKER_ID)
+           ON DELETE CASCADE 
+  );
+  
+  INSERT INTO Title 
+          (WORKER_REF_ID , WORKER_TITLE ,AFFECTED_FROM)
+  VALUES
+		  (001,'Manager','2016-02-29 00:00:00'),
+          (006,'Executive','2017-03-20 00:00:00'),
+          (007,'Assistant','2015-06-10 00:00:00'),
+          (009,'Lead','2014-12-02 00:00:00'),
+          (008,'Manager','2018-11-25 00:00:00');
+          
+  SELECT * FROM Title;
+  SELECT WORKER_REF_ID , WORKER_TITLE FROM Title;
+  
+  SELECT WORKER_ID , FIRST_NAME, SALARY FROM worker;
+  
+  SELECT 55+11 ;
+  
+  SELECT now(); 
+  SELECT ucase('ayush');
+  
+  SELECT lcase('SHALU');
+  
+  USE org ;
+  
+ SELECT * FROM worker ;
+ 
+ SELECT * FROM worker WHERE salary > 200000 ;
+ SELECT * FROM worker WHERE department = 'HR' ;
+ 
+ SELECT * FROM worker WHERE SALARY BETWEEN 300000 AND 500000 ;
+ SELECT * FROM worker WHERE JOINING_DATE BETWEEN 2014-02-21 AND 2015-05-20 ;
+ -- we learnt tell here with example operation on database 
+ -- use IN to reduse the OR condition like we want worker work in department hr or admin or account 
+ -- so one way is : OR use
+ SELECT * FROM worker WHERE DEPARTMENT = 'HR' OR DEPARTMENT = 'Manager' OR DEPARTMENT = 'Account' ;
+ 
+ -- better way to use : IN 
+ 
+ SELECT * FROM worker WHERE DEPARTMENT IN ('HR','Manager');
+ -- this is better way to use IN and reduce OR condition 
