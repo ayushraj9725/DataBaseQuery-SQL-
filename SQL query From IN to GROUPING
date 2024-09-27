@@ -1,0 +1,46 @@
+SELECT * FROM worker WHERE DEPARTMENT IN ('HR','Manager','Account');
+ -- this is better way to use IN and reduce OR condition 
+ -- using not / in
+ 
+ SELECT * FROM worker WHERE DEPARTMENT NOT IN ('HR','Account');
+ 
+ -- is Null using NULL 
+ SELECT * FROM worker WHERE salary is NULL ;
+ 
+ -- pattern searching / wildcard using '%' and '_' for any numbber of character from 0 to n similer to * in regax '_' means only one character eg
+ 
+ SELECT * FROM worker WHERE first_name LIKE  '%sh';
+ SELECT * FROM worker WHERE first_name LIKE  '%A';
+ SELECT * FROM worker WHERE first_name LIKE  'A%';
+ SELECT * FROM worker WHERE first_name LIKE  '%A%';
+ SELECT * FROM worker WHERE first_name LIKE  '_y___';
+ 
+ -- like this we use 
+ 
+ -- sorting performed using ORDER BY and DESC - descending , ASC - ascending order (it is set as default)
+ 
+ SELECT *FROM worker ORDER BY salary ; 
+ SELECT * FROM worker ORDER BY first_name ;
+ 
+ -- we can sort using numbers also using characters abc ...
+ 
+ -- Finding the DISTINCT ENTRY which will show only once 
+ 
+ SELECT DEPARTMENT FROM worker ;
+ SELECT DISTINCT DEPARTMENT FROM worker ;
+ 
+ -- this is how we are using distinct 
+ 
+ -- now we are doing Data grouping using GROUP BY , it will then complete when we applied aggregation , until it treat like distinct 
+ 
+ SELECT DEPARTMENT FROM worker GROUP BY DEPARTMENT ;
+ SELECT DEPARTMENT,COUNT(*) FROM worker GROUP BY DEPARTMENT ;
+ SELECT DEPARTMENT,COUNT(Department) FROM worker GROUP BY DEPARTMENT ;
+ SELECT DEPARTMENT,AVG(salary) FROM worker GROUP BY DEPARTMENT ;
+ 
+ SELECT DEPARTMENT,SUM(salary) FROM worker GROUP BY DEPARTMENT ;
+ SELECT DEPARTMENT,MIN(salary) FROM worker GROUP BY DEPARTMENT ;
+ SELECT DEPARTMENT,MAX(salary) FROM worker GROUP BY DEPARTMENT ;
+ 
+ SELECT DEPARTMENT ,count(salary) FROM worker GROUP BY DEPARTMENT ;
+ 
