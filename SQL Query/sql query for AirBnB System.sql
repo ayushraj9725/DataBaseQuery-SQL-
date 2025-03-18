@@ -2,6 +2,35 @@
 USE  airbnb_vacation_rental_system ;
 
 show tables ;
+CREATE TABLE users (
+    userId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    contactNumber VARCHAR(20) NOT NULL,
+    bio TEXT NOT NULL,
+    userType ENUM('Host', 'Guest', 'Both') NOT NULL,
+    Language VARCHAR(255) NOT NULL,
+    passwordHash VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE listing (
+    listingId INT AUTO_INCREMENT PRIMARY KEY,
+    hostId INT NOT NULL,
+    title VARCHAR(255),
+    description TEXT,
+    location VARCHAR(255),
+    city VARCHAR(255),
+    geocoordinates VARCHAR(255),
+    AccommodationType ENUM('Room', 'House', 'Unique Stay'),
+    Amenities TEXT,
+    availability JSON,
+    basePricePerNight DECIMAL(10,2),
+    currency VARCHAR(3),
+    maxGuests INT NOT NULL,
+    imageGallery TEXT,
+    FOREIGN KEY (hostId) REFERENCES users(userId) ON DELETE CASCADE
+);
+
 CREATE TABLE Booking (
    bookingId INT PRIMARY KEY NOT NULL auto_increment ,
    guestId INT NOT NULL ,
@@ -192,11 +221,19 @@ select * from payments ;
 # 🛠 User Queries 
   -- 1. Retrieve all users who are hosts.
   
+  SELECT u.userId , u.name , u.contactNumber FROM users AS u
+  JOIN listing AS l ON u.userId = l.hostId ;
   
   -- 2. Find the total number of users from Mumbai.
   
+  SELECT count(*) AS no_of_user FROM users AS u
+  JOIN listing l ON u.userId = l.hostId WHERE city = 'Mumbai' ;
   
   -- 3. Fetch the user details of the most recent booking.
+  
+  SELECT * FROM Users u
+  JOIN booking b ON b.guestId = u.userId 
+  ORDER BY b.createdAt DESC LIMIT 1 ;
   
 # 🏠 Listing Queries
   -- 4. Retrieve all listings available in Bangalore.
@@ -210,7 +247,7 @@ select * from payments ;
   
   -- 7. Find all listings with a swimming pool.
   
-#📆 Booking Queries
+# 📆 Booking Queries
   -- 8. Retrieve all confirmed bookings.
   
   
