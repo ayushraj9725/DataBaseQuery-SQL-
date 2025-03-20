@@ -204,6 +204,23 @@ VALUES
 (5, 21000.00, 'INR', 'UPI', 'pending', NOW()),
 (3, 12500.00, 'INR', 'Net Banking', 'failed', NOW());
 
+-- /*********************************************************** MORE RANDOM SAMPLE DATA *******************************************************************/
+INSERT INTO listing (hostId, title, Description, location, city, geocoordinates, AccommodationType, Amenities, availability, basePricePerNight, currency, maxGuests, imageGallery)
+VALUES
+(4, 'Budget Apartment', 'Affordable stay with all basic amenities.', 'Connaught Place, Delhi', 'Delhi', '28.6340° N, 77.2197° E', 'Room',
+ '["WiFi", "Air Conditioning"]',
+ '{"availableDates": ["2024-07-01", "2024-07-10"]}', 1500.00, 'INR', 2,
+ '["budget_apartment1.jpg", "budget_apartment2.jpg"]'),
+
+(5, 'Luxury Suite', 'Premium suite with top-class amenities.', 'South Extension, Delhi', 'Delhi', '28.5584° N, 77.2303° E', 'House',
+ '["WiFi", "Swimming Pool", "Gym", "Air Conditioning"]',
+ '{"availableDates": ["2024-08-01", "2024-08-15"]}', 4500.00, 'INR', 4,
+ '["luxury_suite1.jpg", "luxury_suite2.jpg"]'),
+
+(6, 'Premium Bungalow', 'Spacious bungalow for families and groups.', 'Hauz Khas, Delhi', 'Delhi', '28.5509° N, 77.1944° E', 'Unique Stay',
+ '["WiFi", "Garden", "Fireplace", "Private Parking"]',
+ '{"availableDates": ["2024-06-15", "2024-06-30"]}', 7000.00, 'INR', 6,
+ '["premium_bungalow1.jpg", "premium_bungalow2.jpg"]');
 
 -- NOW WE ARE READY TO execute THE SQL QUERY !
 
@@ -238,14 +255,22 @@ select * from payments ;
 # 🏠 Listing Queries
   -- 4. Retrieve all listings available in Bangalore.
   
+  SELECT * FROM listing WHERE city = 'Bangalore' ;
+  
+  -- PROBLME WRITE SOLUTION FOR TELL ME ALL THE LISTING IN BANGALORE WITH LISTING ID 
+  SELECT listingId , COUNT(*) AS no_of_listing FROM listing WHERE city = 'Bangalore' GROUP BY listingId ;
   
   -- 5. Find the total number of listings per city.
   
+  SELECT  city , COUNT(*)  AS total_no_of_listing FROM listing GROUP BY city ;
   
   -- 6. Get the cheapest listing in Delhi.
   
+  SELECT * FROM listing WHERE city = 'Delhi' ORDER BY basePricePerNight ASC limit 1 ;
   
   -- 7. Find all listings with a swimming pool.
+  
+  SELECT * FROM listing WHERE Amenities LIKE '%Swimming Pool%';
   
 # 📆 Booking Queries
   -- 8. Retrieve all confirmed bookings.
