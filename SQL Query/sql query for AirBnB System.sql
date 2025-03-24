@@ -22,8 +22,8 @@ CREATE TABLE listing (
     city VARCHAR(255),
     geocoordinates VARCHAR(255),
     AccommodationType ENUM('Room', 'House', 'Unique Stay'),
-    Amenities TEXT,
-    availability JSON,
+    Amenities JSON , -- json format
+    availability JSON, -- JSON format containing date ranges 
     basePricePerNight DECIMAL(10,2),
     currency VARCHAR(3),
     maxGuests INT NOT NULL,
@@ -84,6 +84,21 @@ CREATE TABLE Payments (
     transactionDate TIMESTAMP ,
     FOREIGN KEY (bookingId) REFERENCES booking(bookingId)
 );
+
+-- Stores real-time pricing adjustments based on demand, occupancy, or booking trends.
+-- execute this 
+CREATE TABLE dynamic_pricing (
+    pricingId INT AUTO_INCREMENT PRIMARY KEY,
+    listingId INT NOT NULL,
+    startDate DATE NOT NULL,
+    endDate DATE NOT NULL,
+    dynamicPrice DECIMAL(10,2) NOT NULL,
+    reason ENUM('high_demand', 'low_demand', 'last_minute', 'special_event') NOT NULL,
+    createdAt TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (listingId) REFERENCES listing(listingId)
+);
+
+
 
 ALTER TABLE users MODIFY userType ENUM('Host', 'Guest', 'Both') NOT NULL;
 
@@ -241,6 +256,13 @@ select * from payments ;
   SELECT u.userId , u.name , u.contactNumber FROM users AS u
   JOIN listing AS l ON u.userId = l.hostId ;
   
+  -- OR
+  SELECT userId, name, contactNumber FROM users WHERE userType = 'Host' OR userType = 'Both';
+  
+  -- Use DISTINCT to remove duplicates:
+
+     SELECT DISTINCT u.userId, u.name, u.contactNumber FROM users AS u JOIN listing AS l ON u.userId = l.hostId ;
+  
   -- 2. Find the total number of users from Mumbai.
   
   SELECT count(*) AS no_of_user FROM users AS u
@@ -255,7 +277,11 @@ select * from payments ;
 # 🏠 Listing Queries
   -- 4. Retrieve all listings available in Bangalore.
   
-  SELECT * FROM listing WHERE city = 'Bangalore' ;
+  SELECT * FROM listing WHERE city = 'Bangalore' AND availability IS NOT NULL ;
+  
+  -- More Queries 
+  -- 2️⃣  Sort listings by price (cheapest first): 
+  SELECT * FROM listing WHERE city = 'Bangalore' ORDER BY basePricePerNight ASC;
   
   -- PROBLME WRITE SOLUTION FOR TELL ME ALL THE LISTING IN BANGALORE WITH LISTING ID 
   SELECT listingId , COUNT(*) AS no_of_listing FROM listing WHERE city = 'Bangalore' GROUP BY listingId ;
@@ -273,16 +299,35 @@ select * from payments ;
   SELECT * FROM listing WHERE Amenities LIKE '%Swimming Pool%';
   
 # 📆 Booking Queries
-  -- 8. Retrieve all confirmed bookings.
+  -- Retrive the all user who book airbnb 
+  SELECT * FROM users AS u JOIN booking AS b ON u.userId = b.bookingId ;
   
+  -- 8. Retrieve all confirmed bookings. 
+  
+  SELECT * FROM booking As b JOIN users u ON b.guestId = u.userId WHERE b.status = 'confirmed' ;
   
   -- 9. Find total revenue generated from bookings.
   
+  SELECT SUM(totalPrice) AS revenue FROM booking WHERE status = 'completed' ;  -- OR WE CAN GROUP IT 
+  SELECT currency, SUM(totalPrice) AS revenue FROM booking WHERE status = 'completed' GROUP BY currency ;
   
   -- 10. Get all bookings made in the last 30 days.
   
+  SELECT * FROM booking WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY);
+  SELECT * FROM booking WHERE createdAt >= NOW() - INTERVAL 30 DAY;
+     
+     -- Sort bookings by the latest first
+        SELECT * FROM booking WHERE createdAt >= NOW() - INTERVAL 30 DAY ORDER BY createdAt DESC;
+        
+	 -- Get only confirmed bookings in the last 30 days
+        SELECT * FROM booking WHERE createdAt >= NOW() - INTERVAL 30 DAY AND status = 'confirmed';
+	 
+     -- Count total bookings in the last 30 days
+        SELECT COUNT(*) AS totalBookings FROM booking WHERE createdAt >= NOW() - INTERVAL 30 DAY;
   
   -- 11. Find the most booked listing.
+  SELECT l.listingId, l.title, COUNT(b.bookingId) AS totalBookings FROM booking b JOIN listing l ON b.listingId = l.listingId
+  GROUP BY l.listingId, l.title ORDER BY totalBookings DESC LIMIT 1;
   
 #⭐ Review Queries
   -- 12. Retrieve all reviews for the Beachfront Villa.

@@ -1,0 +1,228 @@
+
+Database Design Approach for Flipkart-like E-commerce System
+
+How to Approach the Database Design?
+A Flipkart-like e-commerce system is a large-scale application with multiple microservices handling:
+✔ User Management (Customers, Sellers, Admins)
+✔ Product Management (Catalog, Categories, Inventory)
+✔ Order Processing (Cart, Orders, Payments)
+✔ Logistics & Delivery (Shipping, Tracking)
+✔ Reviews & Ratings (Customer Feedback)
+✔ Offers & Discounts (Coupons, Deals, Dynamic Pricing)
+
+✅ Step 1: Identify Core Services & Tables
+Below is an ER Diagram-like breakdown of different services and their corresponding tables.
+
+1️⃣ User Management Service
+Stores customer, seller, and admin details.
+Tables:
+
+users → Stores user information.
+
+addresses → Stores multiple addresses for a user.
+
+sql
+Copy
+Edit
+CREATE TABLE users (
+    userId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phoneNumber VARCHAR(20) UNIQUE NOT NULL,
+    passwordHash VARCHAR(255) NOT NULL,
+    userType ENUM('Customer', 'Seller', 'Admin') NOT NULL,
+    createdAt TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE addresses (
+    addressId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    addressLine VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    state VARCHAR(255) NOT NULL,
+    country VARCHAR(255) NOT NULL,
+    postalCode VARCHAR(10) NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
+);
+2️⃣ Product & Catalog Service
+Stores products, categories, and inventory details.
+Tables:
+
+categories → Stores product categories.
+
+products → Stores product details.
+
+inventory → Stores stock availability.
+
+sql
+Copy
+Edit
+CREATE TABLE categories (
+    categoryId INT AUTO_INCREMENT PRIMARY KEY,
+    categoryName VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE products (
+    productId INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    categoryId INT NOT NULL,
+    sellerId INT NOT NULL,
+    rating FLOAT DEFAULT 0,
+    createdAt TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (categoryId) REFERENCES categories(categoryId),
+    FOREIGN KEY (sellerId) REFERENCES users(userId) ON DELETE CASCADE
+);
+
+CREATE TABLE inventory (
+    inventoryId INT AUTO_INCREMENT PRIMARY KEY,
+    productId INT NOT NULL,
+    stockQuantity INT NOT NULL DEFAULT 0,
+    warehouseLocation VARCHAR(255),
+    FOREIGN KEY (productId) REFERENCES products(productId) ON DELETE CASCADE
+);
+3️⃣ Cart & Order Management Service
+Handles user carts, orders, and payments.
+Tables:
+
+cart → Stores items added to the cart.
+
+orders → Stores confirmed orders.
+
+order_items → Stores products in each order.
+
+payments → Stores payment details.
+
+sql
+Copy
+Edit
+CREATE TABLE cart (
+    cartId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    productId INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    addedAt TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (userId) REFERENCES users(userId),
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);
+
+CREATE TABLE orders (
+    orderId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    totalAmount DECIMAL(10,2) NOT NULL,
+    orderStatus ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled') DEFAULT 'Pending',
+    createdAt TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (userId) REFERENCES users(userId)
+);
+
+CREATE TABLE order_items (
+    orderItemId INT AUTO_INCREMENT PRIMARY KEY,
+    orderId INT NOT NULL,
+    productId INT NOT NULL,
+    quantity INT NOT NULL,
+    itemPrice DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (orderId) REFERENCES orders(orderId),
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);
+
+CREATE TABLE payments (
+    paymentId INT AUTO_INCREMENT PRIMARY KEY,
+    orderId INT NOT NULL,
+    paymentMethod ENUM('Credit Card', 'Debit Card', 'UPI', 'Net Banking', 'Cash on Delivery') NOT NULL,
+    paymentStatus ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
+    transactionDate TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (orderId) REFERENCES orders(orderId)
+);
+4️⃣ Logistics & Delivery Service
+Manages shipping, tracking, and delivery updates.
+Tables:
+
+shipments → Stores order shipment details.
+
+sql
+Copy
+Edit
+CREATE TABLE shipments (
+    shipmentId INT AUTO_INCREMENT PRIMARY KEY,
+    orderId INT NOT NULL,
+    trackingNumber VARCHAR(50) UNIQUE NOT NULL,
+    carrier VARCHAR(100) NOT NULL,
+    shipmentStatus ENUM('In Transit', 'Delivered', 'Returned') DEFAULT 'In Transit',
+    estimatedDelivery DATE NOT NULL,
+    FOREIGN KEY (orderId) REFERENCES orders(orderId)
+);
+5️⃣ Reviews & Ratings Service
+Manages customer feedback.
+Tables:
+
+reviews → Stores customer ratings and reviews.
+
+sql
+Copy
+Edit
+CREATE TABLE reviews (
+    reviewId INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    productId INT NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    createdAt TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (userId) REFERENCES users(userId),
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);
+6️⃣ Offers & Discounts Service
+Manages coupons, flash sales, and seasonal discounts.
+Tables:
+
+coupons → Stores discount coupons.
+
+sql
+Copy
+Edit
+CREATE TABLE coupons (
+    couponId INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(20) UNIQUE NOT NULL,
+    discountPercentage INT CHECK (discountPercentage BETWEEN 1 AND 100),
+    startDate DATE NOT NULL,
+    endDate DATE NOT NULL,
+    applicableCategoryId INT NULL, -- NULL means applicable for all categories
+    FOREIGN KEY (applicableCategoryId) REFERENCES categories(categoryId)
+);
+✅ Step 2: Designing Relationships in an ER Diagram
+Each table is linked via FOREIGN KEYS to maintain referential integrity.
+
+🔹 Example Relationships
+A user can have multiple addresses (1:N).
+
+A product belongs to one category (1:N).
+
+A cart holds multiple products (M:N).
+
+A user can place multiple orders (1:N).
+
+An order contains multiple items (M:N).
+
+A product can have multiple reviews (1:N).
+
+An order has one shipment (1:1).
+
+✅ Step 3: Implementing Dynamic Pricing
+Demand-based pricing: Adjust price dynamically based on demand.
+
+Seasonal pricing: Apply discounts during festivals or sales.
+
+Membership-based pricing: Special pricing for premium customers.
+
+sql
+Copy
+Edit
+CREATE TABLE dynamic_pricing (
+    pricingId INT AUTO_INCREMENT PRIMARY KEY,
+    productId INT NOT NULL,
+    startDate DATE NOT NULL,
+    endDate DATE NOT NULL,
+    priceChangeType ENUM('Increase', 'Discount') NOT NULL,
+    priceAdjustment DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (productId) REFERENCES products(productId)
+);
