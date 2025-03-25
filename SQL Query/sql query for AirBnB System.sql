@@ -330,16 +330,35 @@ select * from payments ;
   GROUP BY l.listingId, l.title ORDER BY totalBookings DESC LIMIT 1;
   
 #⭐ Review Queries
-  -- 12. Retrieve all reviews for the Beachfront Villa.
-  
-  
+  -- 12. Retrieve all reviews for the Beachfront Villa or Luxury Apartment.
+  SELECT r.* FROM reviews AS r INNER JOIN listing AS l ON r.listingId = l.listingId WHERE l.title = 'Beachfront Villa' OR l.title = 'Luxury Apartment';
+  -- 1️⃣   Sort reviews by most recent we can do this also       :     ORDER BY r.reviewDate DESC;
+  -- Count total reviews for 'Beachfront Villa'
+  SELECT COUNT(*) AS totalReview FROM reviews AS r INNER JOIN listing AS l ON r.listingId = l.listingId WHERE l.title = 'Beachfront Villa';  
+ 
   -- 13. Find the average rating of each listing.
+   -- SELECT AVG(rating) AS rating FROM reviews ; , this is not correct for each listing we have to do another queries for this join with listing 
+     SELECT l.listingId , l.title , AVG(r.rating) AS avg_rating FROM reviews r INNER JOIN listing l ON r.listingId = l.listingId GROUP BY l.listingId , l.title ;
   
-  
+   -- 1 ️⃣  Sort Listings by Highest Rating First      ->   ORDER BY avg_rating DESC ;
+   -- 2 ️⃣  Round Off to 2 Decimal Places              ->   ROUND(AVG(r.rating), 2) AS avg_rating 
+   -- 3 ️⃣  Filter Listings with More Than 5 Reviews   ->   HAVING COUNT(r.reviewId) > 5; 
+
   -- 14. Fetch users who have not left any reviews.
-  
+     SELECT u.userId , u.name , u.email  FROM users u LEFT JOIN reviews r ON u.userId = r.userId WHERE r.userId IS NULL ;
+     SELECT u.userId, u.name, u.email FROM reviews AS r RIGHT JOIN users AS u ON r.userId = u.userId WHERE r.userId IS NULL;
+     
+      -- 1 ️⃣  Sort Users Alphabetically  ->  ORDER BY u.name ASC;
+      
+      -- 2 ️⃣  Fetch Additional User Details
+     SELECT u.userId, u.name, u.email, u.contactNumber, u.userType FROM users u ;
+     
+      -- 3 ️⃣ Count Users Who Have Not Left Any Review 
+      SELECT COUNT(*) AS usersWithoutReviews FROM users AS u LEFT JOIN reviews AS r ON u.userId = r.userId WHERE r.userId IS NULL ;
   
   -- 15. Get listings with at least 5 reviews.
+      SELECT l.listingId , l.title , l.location , COUNT(r.reviewId) AS rotalReviews FROM listing AS l 
+      INNER JOIN reviews AS r ON r.listingId = l.listingId GROUP BY l.listingId , l.title HAVING COUNT(r.reviewId) >= 5 ;
   
 #📩 Messages Queries
   -- 16. Retrieve all messages between user 1 and user 2.
